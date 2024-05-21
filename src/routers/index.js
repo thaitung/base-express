@@ -2,6 +2,7 @@ const express = require('express');
 const routers = express.Router();
 const classesController = require('../controllers/classesController');
 const StudentsController = require('../controllers/studentsController');
+const authenticate = require('../middleware/Authentication')
 
 
 routers.get('/test', function (req, res) {
@@ -9,8 +10,10 @@ routers.get('/test', function (req, res) {
 });
 
 // Tag
-routers.post('/student', StudentsController.createStudent)
-routers.post('/class', classesController.createClass)
-routers.get('/class', classesController.getClasses)
+routers.post('/login', StudentsController.loginStudent)
+routers.post('/student', authenticate, StudentsController.createStudent)
+routers.post('/class', authenticate, classesController.createClass)
+routers.get('/class', authenticate, classesController.getClasses)
+routers.get('/class/raw', authenticate, classesController.getClassesRaw)
 
 exports = module.exports = routers;

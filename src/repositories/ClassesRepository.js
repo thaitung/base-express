@@ -2,12 +2,31 @@ const ClassesModel = require("../models/classesModel");
 const StudentsModel = require("../models/studentsModel");
 const CoursesModel = require("../models/coursesModel");
 const ScoresModel = require("../models/scoresModel");
+const sequelize = require("../configs/connections/postgresql");
 
 ClassesModel.hasMany(StudentsModel, { as: "students", foreignKey: "malop" });
 StudentsModel.belongsTo(ClassesModel, { as: "classes", foreignKey: "malop" });
 StudentsModel.hasMany(ScoresModel, { as: "scores", foreignKey: "masv", targetKey: "masv" });
 ScoresModel.belongsTo(CoursesModel, { as: "courses", foreignKey: "mamonhoc", targetKey: "mamonhoc" });
 class ClassesRepository {
+  static getClassesRaw(id) {
+    const query = `
+      SELECT classes.*, (
+        SELECT json_agg(row_to_json(sv.*)::jsonb || jsonb_build_object('scores', (
+            SELECT json_agg(row_to_json(sv.*)::jsonb || jsonb_build_object('courses', row_to_json(mh.*)::jsonb))
+                FROM bangdiemthihocky bd
+                LEFT JOIN public.monhoc mh ON bd.mamonhoc = mh.mamonhoc
+        )))
+        FROM public.sinhvien sv
+      ) students
+      FROM public.lop classes
+    `
+    return sequelize.query(query, {
+        type: 'SELECT',
+        raw: true
+    })
+  }
+
   static getClassesAll(id) {
     return ClassesModel.findAll({
         include: [{

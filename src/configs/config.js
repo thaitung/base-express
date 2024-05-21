@@ -6,4 +6,5 @@ module.exports = {
     DB_PORT: "5432",
     DB_DIALECT: "postgres",
     PORT: "3009",
+    SECRET_KEY: 'base-express',
 }
